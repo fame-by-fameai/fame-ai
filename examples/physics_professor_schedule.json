@@ -1,0 +1,77 @@
+[
+  {
+    "day": 1,
+    "post_number": 1,
+    "post_type": "face",
+    "topic": "Achievements and milestones",
+    "content": {
+      "base_image_prompt": "Dr. Alex Thompson stood on a brightly lit stage, surrounded by applauding colleagues. A large screen displayed his groundbreaking research on neurodegenerative diseases. The room buzzed with excitement as he accepted an award, his latest milestone in a career dedicated to advancing medical science and improving patient outcomes.",
+      "text": "Draft caption about Achievements and milestones"
+    },
+    "timing": "Day 1 at 06:25 AM"
+  },
+  {
+    "day": 2,
+    "post_number": 1,
+    "post_type": "text",
+    "topic": "Updates about physics",
+    "content": {
+      "text": "\"Big updates in physics this week! Researchers have made strides in quantum computing and dark matter detection. The possibilities are mind-blowing\u2014science never stops pushing the boundaries. Stay curious, folks! #Physics #Quantum #DarkMatter\""
+    },
+    "timing": "Day 2 at 06:06 AM"
+  },
+  {
+    "day": 3,
+    "post_number": 1,
+    "post_type": "text",
+    "topic": "Inspirational moments",
+    "content": {
+      "text": "\"Sometimes, the smallest moments spark the biggest changes. \ud83c\udf1f Whether it\u2019s a kind word, a bold idea, or a leap of faith, inspiration is everywhere\u2014ready to light up your path. Keep your heart open and your mind curious! \ud83d\ude80 #Inspiration #KeepGoing\""
+    },
+    "timing": "Day 3 at 07:12 AM"
+  },
+  {
+    "day": 4,
+    "post_number": 1,
+    "post_type": "face",
+    "topic": "Updates about humor",
+    "content": {
+      "base_image_prompt": "Dr. Alex Thompson stands on a brightly lit stage, microphone in hand, at a bustling comedy club. Surrounded by laughter and clinking glasses, he delivers witty updates on the science of humor, blending research with punchlines, as the audience erupts in applause, captivated by his unique blend of intellect and charm.",
+      "text": "Draft caption about Updates about humor"
+    },
+    "timing": "Day 4 at 07:01 AM"
+  },
+  {
+    "day": 5,
+    "post_number": 1,
+    "post_type": "image",
+    "topic": "Progress updates",
+    "content": {
+      "image_prompt": "A sleek dashboard on a tablet screen, displaying vibrant graphs and charts tracking project milestones. A progress bar at 75%, with key metrics highlighted in bold. Dr. Alex Thompson's initials subtly engraved on the device, symbolizing personalized oversight. Clean, modern design with a focus on clarity and actionable insights.",
+      "text": "Draft caption about Progress updates"
+    },
+    "timing": "Day 5 at 06:05 AM"
+  },
+  {
+    "day": 6,
+    "post_number": 1,
+    "post_type": "image",
+    "topic": "Updates about teaching",
+    "content": {
+      "image_prompt": "The image features Dr. Alex Thompson at a sleek, modern desk, reviewing a glowing tablet displaying \"Teaching Updates.\" A vibrant, interactive classroom hologram hovers above, showing engaged students. Warm lighting highlights his thoughtful expression, while books and a coffee cup add a personal touch, symbolizing dedication and innovation in education.",
+      "text": "Draft caption about Updates about teaching"
+    },
+    "timing": "Day 6 at 10:41 AM"
+  },
+  {
+    "day": 7,
+    "post_number": 1,
+    "post_type": "face",
+    "topic": "Tips and advice",
+    "content": {
+      "base_image_prompt": "Dr. Alex Thompson stands in a sunlit kitchen, demonstrating healthy meal prep techniques to a small group. Fresh vegetables and colorful ingredients are neatly arranged on the counter. He emphasizes portion control and balanced nutrition, his calm demeanor and practical advice resonating with the attentive audience.",
+      "text": "Draft caption about Tips and advice"
+    },
+    "timing": "Day 7 at 07:31 AM"
+  }
+]
