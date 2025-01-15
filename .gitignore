@@ -20,7 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 print.py
-.txt
+*.txt
 # Virtual Environment
 venv/
 env/
