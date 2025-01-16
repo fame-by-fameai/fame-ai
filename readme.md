@@ -1,38 +1,6 @@
 # FAME Framework 🚀
 
-FAME Framework (Full AI Meta Engine) is an AI agent framework designed to simulate human-like interactions and content creation on social media platforms.
-
-## Installation
-
-You can install FAME from PyPI:
-
-```bash
-pip install fame-agent
-```
-
-For development installation:
-
-```bash
-pip install fame-agent[dev]
-```
-
-## Quick Start
-
-```python
-from fame.agent import Agent
-
-# Initialize agent
-agent = Agent(
-    env_file=".env",
-    facets_of_personality="A tech startup founder focused on innovation...",
-    abilities_knowledge="Expert in: AI/ML architecture, sustainable computing...",
-    mood_emotions="Enthusiastic about sharing startup knowledge...",
-    environment_execution=[]
-)
-
-# Post a tweet
-result = agent.post_image_tweet()
-```
+FAME Framework (also known as Full AI Meta Engine) is an AI agent framework designed to simulate human-like interactions and content creation on social media platforms, specifically Twitter. It can generate content including images, text, and videos that reflect the agent's personality, knowledge, and current mood. 🎨📝
 
 The project consists of several modules that handle different aspects of the agent's behavior:
 
@@ -41,82 +9,95 @@ The project consists of several modules that handle different aspects of the age
 - **Mood and Emotions**: Current emotional state and intensity. 😃😢
 - **Environment and Execution**: Scheduling of posts and integration with Twitter. 📅🐦
 
-## Table of Contents 📚
+## Installation
 
-- [Installation](#installation)
-- [Usage](#usage)
-- [Project Structure](#project-structure)
-  - [fame/](#fame)
-  - [Configuration Files](#configuration-files)
-  - [Integrations](#integrations)
-  - [Utilities](#utilities)
-  - [Core Components](#core-components)
-- [Contributing](#contributing)
-- [License](#license)
+Install the package using pip:
 
-## Usage🛠️
+```bash
+pip install fame-ai
+```
 
-Once installed, you can run the agent to automate posting activities on Twitter:
+## Quick Start
 
-1. Initialize an `Agent` instance:
+1. Create a `.env` file with your API keys:
 
-   ```python
-   from fame.agent import Agent
+```env
+# Twitter/X API Credentials
+X_CONSUMER_KEY=your_consumer_key_here
+X_CONSUMER_SECRET=your_consumer_secret_here
+X_ACCESS_TOKEN=your_access_token_here
+X_ACCESS_TOKEN_SECRET=your_access_token_secret_here
 
-   # Load your configurations and profiles here
-   agent = Agent(
-       facets_of_personality="path/to/facets.json",
-       abilities_knowledge="path/to/abilities.json",
-       mood_emotions="path/to/mood.json"
-       # Additional parameters...
-   )
+# AI Service API Keys
+REPLICATE_API_KEY=your_replicate_key_here
+OPENROUTER_API_KEY=your_openrouter_key_here
+```
 
-   # To post a tweet
-   agent.post_tweet("Hello, world!")
-   ```
+2. Create a profile image for your agent in a `profiles` directory:
 
-2. Schedule automated posts using background schedulers.⏰
+```bash
+mkdir profiles
+# Add your agent's profile image as profiles/your_image.jpg
+```
 
-## Project Structure🏗️
+3. Basic usage example:
 
-### `fame/`
+```python
+from fame.agent import Agent
 
-The main package directory containing all modules and classes required to run the Fame agent. Key files include:
+# Initialize agent with personality
+agent = Agent(
+    env_file=".env",
+    facets_of_personality=(
+        "Bonnie is a friendly and cheerful Korean girl who likes dancing "
+        "and studying in high school"
+    ),
+    abilities_knowledge=(
+        "She has strong dancing skills and high school level knowledge "
+        "in the United States"
+    ),
+    mood_emotions="generally happy but sometimes gets stressed about exams",
+    environment_execution=[],  # Empty list for no scheduling
+    profile_image_path="profiles/bonnie.jpg",
+)
 
-- `__init__.py`: Makes the directory a Python package.
-- `agent.py`: Main class for managing agent behaviors, including posting tweets and generating content.
+# Post a simple text tweet
+text_result = agent.post_tweet(
+    instruction="Share your excitement about an upcoming dance performance"
+)
 
-### Configuration Files 📄
+# Post a tweet with face-swapped image
+image_result = agent.post_image_tweet(
+    prompt="",  # Will be generated based on personality
+    tweet_text="",  # Will be generated based on image
+    use_face_swap=True,  # Enable face swapping
+)
+```
 
-Configuration files define default parameters and model configurations. These can be customized as needed:
+## Features
 
-- `openrouter_models.py`: Default OpenRouter model configurations.
-- `replicate_models.py`: Default Replicate model configurations.
+- 🤖 Personality-driven content generation
+- 🎭 Face swapping with profile images
+- 📝 Natural text generation
+- 🖼️ AI image generation
+- 📅 Scheduled posting (optional)
+- 🔄 Twitter/X API integration
 
-### Integrations🔗
+## Requirements
 
-Modules handling integrations with various APIs and platforms for seamless interaction:
+- Python 3.8+
+- Twitter/X Developer Account with API access
+- Replicate API key
+- OpenRouter API key
 
-- `openrouter_integration.py`: Integration with OpenRouter AI models for text generation and chat functionalities.
-- `replicate_integration.py`: Integration with Replicate for image generation and face swap capabilities.
-- `twitter_integration.py`: Handles interactions with the Twitter API.
+## Documentation
 
-### Core Components 🧩
+For more detailed examples and API documentation, visit our [documentation site](https://docs.getfame.ai).
 
-Core modules that define various facets of agent behavior:
+## Contributing
 
-- `abilities_and_knowledge.py`: Manages agent's skills, knowledge areas, and expertise.
-- `facets_of_personality.py`: Encapsulates personality traits and communication styles.
-- `mood_and_emotions.py`: Handles mood tracking and emotional states.
+We welcome contributions! Please feel free to submit a Pull Request.
 
-### Utilities 🛠️
+## License
 
-Utility modules providing helper functions and tools:
-
-- `path_utils.py`: Resolves file paths for profile images.
-- `sentiment_analysis.py`: Performs sentiment analysis using OpenRouter LLM integration.
-- `tweet_validator.py`: Validates tweet content against Twitter's requirements.
-
-## Conclusion 🎉
-
-The Fame project provides a robust framework for creating an AI-driven agent capable of automated interactions on social media platforms. With configurable integrations and flexible core components, it allows for extensive customization to meet various needs in content generation and social media automation.
+This project is licensed under the MIT License - see the LICENSE file for details.
