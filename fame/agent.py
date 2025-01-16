@@ -159,14 +159,14 @@ class Agent:
             abilities = self.abilities.get_knowledge_context()
             mood = self.mood.get_mood_context()
 
-            # First, generate a natural scene description using LLM
+            # Generate multiple scene descriptions
             scene_prompt = (
-                f"Create a natural, candid lifestyle photograph description.\n\n"
+                f"Create 10 different natural, candid lifestyle photograph descriptions.\n\n"
                 f"Person details:\n"
                 f"Personality: {personality}\n"
                 f"Knowledge & Abilities: {abilities}\n"
                 f"Current Mood: {mood}\n\n"
-                f"Requirements:\n"
+                f"Requirements for each scene:\n"
                 f"1. Start with the person's demographic details (age, gender, ethnicity)\n"
                 f"2. Describe a realistic scene that shows their personality\n"
                 f"3. Include what they're doing and wearing\n"
@@ -176,37 +176,70 @@ class Agent:
                 f"Format:\n"
                 f"Begin with 'A [age] [gender] [ethnicity] person...'\n"
                 f"Example: If personality mentions 'high school girl', start with 'A young female teenager...'\n\n"
-                f"Provide only the scene description, no additional commentary."
+                f"Return ONLY a valid JSON array of strings containing exactly 10 scene descriptions.\n"
+                f"Example format:\n"
+                f"[\n"
+                f'  "Scene description 1 here...",\n'
+                f'  "Scene description 2 here...",\n'
+                f'  "Scene description 3 here..."\n'
+                f"]\n\n"
+                f"Ensure the output is a properly formatted JSON array. No additional text or explanation."
             )
 
-            # Generate the base scene using LLM
-            base_scene = self.openrouter_integration.generate_text(prompt=scene_prompt)
-            if not base_scene:
-                print("Failed to generate base scene description")
+            # Generate the scenes using LLM
+            scenes_json = self.openrouter_integration.generate_text(prompt=scene_prompt)
+            if not scenes_json:
+                print("No response from LLM")
                 return ""
 
-            print(f"\nGenerated base scene: {base_scene}")
+            try:
+                # Clean the response
+                cleaned_json = scenes_json.strip()
+                if not cleaned_json.startswith("["):
+                    # Try to find the JSON array
+                    import re
 
-            # For face swap, add technical requirements
-            if for_face_swap:
-                final_prompt = (
-                    f"{base_scene.strip()}\n\n"
-                    f"Additional technical requirements for face swapping:\n"
-                    f"1. Subject's face must be clearly visible\n"
-                    f"2. Natural front-facing or 3/4 angle of face\n"
-                    f"3. Well-lit facial features\n"
-                    f"4. No extreme expressions\n"
-                    f"5. High quality, realistic photography\n"
-                    f"6. No face obscuring elements\n"
-                    f"7. Professional camera quality\n"
-                    f"8. Sharp focus on face\n"
-                    f"The final image must be ultra-realistic, not artistic or stylized."
-                )
-            else:
-                final_prompt = base_scene.strip()
+                    match = re.search(r"\[(.*?)\]", cleaned_json, re.DOTALL)
+                    if match:
+                        cleaned_json = match.group(0)
+                    else:
+                        print("Could not find JSON array in response")
+                        return ""
 
-            print(f"\nFinal prompt: {final_prompt}")
-            return final_prompt
+                # Parse JSON array
+                import json
+
+                scenes = json.loads(cleaned_json)
+
+                if not isinstance(scenes, list) or len(scenes) == 0:
+                    print("Invalid scenes format or empty list")
+                    return ""
+
+                # Randomly select one scene
+                import random
+
+                selected_scene = random.choice(scenes)
+
+                print(f"\nSelected scene from {len(scenes)} options: {selected_scene}")
+
+                # Add technical notes for face swapping and photography
+                if for_face_swap:
+                    selected_scene += (
+                        "\n\nPhotography setup: Shot with a professional DSLR camera, 85mm portrait lens at f/2.8. "
+                        "Natural window lighting from the front-left, supplemented with a soft fill light. "
+                        "Camera positioned at eye level, subject's face at 3/4 angle. "
+                        "Sharp focus on facial features, subtle background blur. "
+                        "High-end color grading, ultra-realistic photographic style, 4K resolution. "
+                        "Absolutely no artistic filters, no anime style, no illustration effects. "
+                        "This must look like a professional photograph taken with high-end equipment."
+                    )
+
+                return selected_scene
+
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse scenes JSON: {str(e)}")
+                print(f"Raw response: {scenes_json}")
+                return ""
 
         except Exception as e:
             print(f"Error generating base image prompt: {str(e)}")
@@ -218,38 +251,85 @@ class Agent:
             # Get personality context
             personality = self.facets.get_personality_context()
 
-            # Generate scene description with all requirements in a single prompt
-            print("\nGenerating image prompt...")
-            base_prompt = (
-                f"Generate a detailed, photorealistic scene description for a photo of someone with "
-                f"this personality:\n{personality}\n\n"
-                f"Requirements:\n"
+            # Generate multiple scene descriptions
+            print("\nGenerating diverse scene options...")
+            scene_prompt = (
+                f"You are a scene description generator. Generate 10 different photo scene descriptions "
+                f"for someone with this personality:\n{personality}\n\n"
+                f"Requirements for each scene:\n"
                 f"1. Natural, candid moment\n"
                 f"2. Show their interests and personality\n"
                 f"3. Include environmental details\n"
-                f"4. Create a warm, authentic mood\n"
-                f"5. Subject's face must be clearly visible\n"
-                f"6. Natural front-facing or 3/4 angle of face\n"
-                f"7. Well-lit facial features\n"
-                f"8. No extreme expressions\n"
-                f"9. High quality, realistic photography\n"
-                f"10. No face obscuring elements\n"
-                f"11. Professional camera quality\n"
-                f"12. Sharp focus on face\n\n"
-                f"Write a single, cohesive scene description that incorporates all requirements naturally."
+                f"4. Each scene must be unique and different\n"
+                f"5. Maximum 100 words per scene\n"
+                f"6. Subject's face must be clearly visible\n"
+                f"7. Natural front-facing or 3/4 angle of face\n"
+                f"8. Well-lit facial features\n"
+                f"9. Professional camera quality\n\n"
+                f"Return ONLY a valid JSON array of strings containing exactly 10 scene descriptions.\n"
+                f"Example format:\n"
+                f"[\n"
+                f'  "Scene description 1 here...",\n'
+                f'  "Scene description 2 here...",\n'
+                f'  "Scene description 3 here..."\n'
+                f"]\n\n"
+                f"Ensure the output is a properly formatted JSON array. No additional text or explanation."
             )
 
-            scene = self.openrouter_integration.generate_text(prompt=base_prompt)
-            if not scene:
+            # Get scenes from LLM
+            scenes_json = self.openrouter_integration.generate_text(prompt=scene_prompt)
+            if not scenes_json:
+                print("No response from LLM")
                 return ""
 
-            print(f"\nGenerated scene: {scene}")
+            try:
+                # Clean the response
+                cleaned_json = scenes_json.strip()
+                if not cleaned_json.startswith("["):
+                    # Try to find the JSON array
+                    import re
 
-            # Add technical note for face swapping if needed
-            if for_face_swap:
-                scene += "\n\nNote: The final image must be ultra-realistic, not artistic or stylized."
+                    match = re.search(r"\[(.*?)\]", cleaned_json, re.DOTALL)
+                    if match:
+                        cleaned_json = match.group(0)
+                    else:
+                        print("Could not find JSON array in response")
+                        return ""
 
-            return scene
+                # Parse JSON array
+                import json
+
+                scenes = json.loads(cleaned_json)
+
+                if not isinstance(scenes, list) or len(scenes) == 0:
+                    print("Invalid scenes format or empty list")
+                    return ""
+
+                # Randomly select one scene
+                import random
+
+                selected_scene = random.choice(scenes)
+
+                print(f"\nSelected scene from {len(scenes)} options: {selected_scene}")
+
+                # Add technical notes for face swapping and photography
+                if for_face_swap:
+                    selected_scene += (
+                        "\n\nPhotography setup: Shot with a professional DSLR camera, 85mm portrait lens at f/2.8. "
+                        "Natural window lighting from the front-left, supplemented with a soft fill light. "
+                        "Camera positioned at eye level, subject's face at 3/4 angle. "
+                        "Sharp focus on facial features, subtle background blur. "
+                        "High-end color grading, ultra-realistic photographic style, 4K resolution. "
+                        "Absolutely no artistic filters, no anime style, no illustration effects. "
+                        "This must look like a professional photograph taken with high-end equipment."
+                    )
+
+                return selected_scene
+
+            except json.JSONDecodeError as e:
+                print(f"Failed to parse scenes JSON: {str(e)}")
+                print(f"Raw response: {scenes_json}")
+                return ""
 
         except Exception as e:
             print(f"Error generating image prompt: {str(e)}")

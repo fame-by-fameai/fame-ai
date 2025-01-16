@@ -26,13 +26,18 @@ class ReplicateIntegration:
             model = "xlabs-ai/flux-dev-realism:39b3434f194f87a900d1bc2b6d4b983e90f0dde1d5022c27b52c143d670758fa"
             input_data = {
                 "prompt": prompt,
-                "guidance": 3.5,
+                "guidance": 7.5,
                 "num_outputs": 1,
-                "aspect_ratio": "4:5",
-                "lora_strength": 0.8,
+                "aspect_ratio": "1:1",
+                "lora_strength": 1.0,
                 "output_format": "webp",
                 "output_quality": 100,
-                "num_inference_steps": 30,
+                "num_inference_steps": 50,
+                "negative_prompt": (
+                    "cartoon, anime, illustration, painting, drawing, artwork, "
+                    "distorted, blurry, low quality, ugly, duplicate, morbid, "
+                    "mutilated, deformed, disfigured, poorly drawn face"
+                ),
             }
 
             # Run prediction

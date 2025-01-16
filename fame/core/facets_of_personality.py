@@ -15,31 +15,63 @@ class FacetsOfPersonality:
         """
         self.description = description
         self.llm = llm
-        self.demographics = self._extract_demographics()
+        self.demographics = self._extract_demographics(description)
 
-    def _extract_demographics(self) -> Dict[str, str]:
-        """Extract demographic information from description using LLM."""
-        prompt = (
-            f"Extract demographic information from this personality description:\n"
-            f"{self.description}\n\n"
-            f"Return only a JSON object with these fields:\n"
-            f'{{"gender": "...", "age": "...", "ethnicity": "..."}}\n\n'
-            f'Example: {{"gender": "female", "age": "teenager", "ethnicity": "white"}}\n'
-            f"Use 'unknown' if a field cannot be determined."
-        )
-
+    def _extract_demographics(self, description: str) -> Dict[str, str]:
+        """Extract demographic information from personality description."""
         try:
+            # Build prompt for demographic extraction
+            prompt = (
+                f"Extract demographic information from this description:\n"
+                f"{description}\n\n"
+                f"Return ONLY an array with exactly 3 strings in this order: [age, gender, ethnicity]\n"
+                f'Example: ["teenager", "female", "korean"]\n\n'
+                f"- Age should be general (child, teenager, young adult, adult, elderly)\n"
+                f"- Gender should be male or female\n"
+                f"- Ethnicity should be specific (korean, chinese, caucasian, etc)\n"
+                f"Return only the array, no other text or formatting."
+            )
+
+            # Get demographics from LLM
             response = self.llm.generate_text(prompt=prompt)
+            if not response:
+                return {}
 
-            # Parse JSON response
-            import json
+            try:
+                # Clean and parse response
+                cleaned = response.strip()
+                if not cleaned.startswith("["):
+                    # Try to find array in response
+                    import re
 
-            demographics = json.loads(response)
-            return demographics
+                    match = re.search(r"\[(.*?)\]", cleaned, re.DOTALL)
+                    if match:
+                        cleaned = match.group(0)
+                    else:
+                        return {}
+
+                # Parse array
+                import json
+
+                demographics = json.loads(cleaned)
+
+                if not isinstance(demographics, list) or len(demographics) != 3:
+                    return {}
+
+                # Convert to dictionary
+                return {
+                    "age": demographics[0].lower(),
+                    "gender": demographics[1].lower(),
+                    "ethnicity": demographics[2].lower(),
+                }
+
+            except json.JSONDecodeError:
+                print(f"Error parsing demographics response: {response}")
+                return {}
 
         except Exception as e:
             print(f"Error extracting demographics: {str(e)}")
-            return {"gender": "unknown", "age": "unknown", "ethnicity": "unknown"}
+            return {}
 
     def get_personality_context(self) -> str:
         """Get full personality context including demographics."""
