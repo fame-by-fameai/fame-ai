@@ -55,18 +55,28 @@ class OpenRouterIntegration:
                 **self.models[model_type]["default_params"],
             )
 
-    def generate_text(
-        self, prompt: str, model_type: str = "text_generation", **kwargs
-    ) -> Optional[str]:
-        """Generate text using the specified model type."""
+    def generate_text(self, prompt: str) -> Optional[str]:
+        """Generate text using the configured model."""
         try:
+            print("\nPreparing to generate text...")
+            print(f"Using model: {self.models['text_generation']['id']}")
+
             messages = [
-                SystemMessage(content="You are a helpful AI assistant."),
-                HumanMessage(content=prompt),
+                {"role": "system", "content": "You are a helpful AI assistant."},
+                {"role": "user", "content": prompt},
             ]
 
-            response = self.llm.invoke(messages)
-            return response.content
+            print("\nSending request to OpenRouter...")
+            response = self.chat_completion(messages)
+
+            if not response or "choices" not in response:
+                print("No valid response from OpenRouter")
+                return None
+
+            generated_text = response["choices"][0]["message"]["content"]
+            print(f"\nGenerated text: {generated_text}")
+
+            return generated_text.strip()
 
         except Exception as e:
             print(f"Text generation failed: {str(e)}")

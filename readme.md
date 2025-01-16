@@ -1,6 +1,38 @@
 # FAME Framework 🚀
 
-FAME Framework (also known as Full AI Meta Engine) is an AI agent framework designed to simulate human-like interactions and content creation on social media platforms, specifically Twitter. It can generate content including images, text, and videos that reflect the agent's personality, knowledge, and current mood. 🎨📝
+FAME Framework (Full AI Meta Engine) is an AI agent framework designed to simulate human-like interactions and content creation on social media platforms.
+
+## Installation
+
+You can install FAME from PyPI:
+
+```bash
+pip install fame-agent
+```
+
+For development installation:
+
+```bash
+pip install fame-agent[dev]
+```
+
+## Quick Start
+
+```python
+from fame.agent import Agent
+
+# Initialize agent
+agent = Agent(
+    env_file=".env",
+    facets_of_personality="A tech startup founder focused on innovation...",
+    abilities_knowledge="Expert in: AI/ML architecture, sustainable computing...",
+    mood_emotions="Enthusiastic about sharing startup knowledge...",
+    environment_execution=[]
+)
+
+# Post a tweet
+result = agent.post_image_tweet()
+```
 
 The project consists of several modules that handle different aspects of the agent's behavior:
 
@@ -21,25 +53,6 @@ The project consists of several modules that handle different aspects of the age
   - [Core Components](#core-components)
 - [Contributing](#contributing)
 - [License](#license)
-
-## Installation ⚙️
-
-To set up the Fame project, ensure you have Python installed on your system. Follow these steps:
-
-1. Clone the repository:
-
-   ```bash
-   git clone <repository-url>
-   cd fame
-   ```
-
-2. Install dependencies via `pip`:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Set up environment variables by creating a `.env` file at the project root with necessary API keys and configuration.🔑
 
 ## Usage🛠️
 

@@ -1,133 +1,56 @@
-from dataclasses import dataclass, field
-from typing import List, Dict, Any
-import re
+from typing import Dict
+from fame.integrations.openrouter_integration import OpenRouterIntegration
 
 
-@dataclass
 class FacetsOfPersonality:
-    core_traits: List[str] = field(default_factory=list)
-    interests: List[str] = field(default_factory=list)
-    communication_style: str = "professional"
-    current_style: str = "informative"
+    """Core personality traits and characteristics."""
 
-    def __init__(self, description: str):
-        """Initialize personality from description."""
-        self.raw_description = description
-        self._parse_description()
+    def __init__(self, description: str, llm: OpenRouterIntegration):
+        """
+        Initialize personality facets.
 
-    def _parse_description(self):
-        """Parse the description to extract personality traits."""
-        description = self.raw_description.lower()
+        Args:
+            description: Personality description
+            llm: OpenRouter integration instance
+        """
+        self.description = description
+        self.llm = llm
+        self.demographics = self._extract_demographics()
 
-        # Professional trait keywords
-        trait_keywords = {
-            # Leadership traits
-            "visionary": ["visionary", "pioneering", "innovative", "forward-thinking"],
-            "leader": ["leader", "executive", "founder", "director", "manager"],
-            "strategic": ["strategic", "analytical", "methodical", "systematic"],
-            # Communication traits
-            "articulate": ["articulate", "eloquent", "expressive", "communicative"],
-            "engaging": ["engaging", "charismatic", "captivating", "inspiring"],
-            "direct": ["direct", "straightforward", "clear", "concise"],
-            # Teaching traits
-            "educator": ["educator", "teacher", "instructor", "mentor", "coach"],
-            "explanatory": [
-                "explanatory",
-                "informative",
-                "educational",
-                "enlightening",
-            ],
-            "patient": ["patient", "understanding", "supportive", "helpful"],
-            # Technical traits
-            "technical": ["technical", "analytical", "precise", "detailed"],
-            "expert": ["expert", "specialist", "authority", "professional"],
-            "innovative": ["innovative", "creative", "inventive", "original"],
-            # Personal traits
-            "enthusiastic": ["enthusiastic", "passionate", "energetic", "dynamic"],
-            "witty": ["witty", "humorous", "clever", "funny"],
-            "approachable": ["approachable", "friendly", "accessible", "relatable"],
-        }
+    def _extract_demographics(self) -> Dict[str, str]:
+        """Extract demographic information from description using LLM."""
+        prompt = (
+            f"Extract demographic information from this personality description:\n"
+            f"{self.description}\n\n"
+            f"Return only a JSON object with these fields:\n"
+            f'{{"gender": "...", "age": "...", "ethnicity": "..."}}\n\n'
+            f'Example: {{"gender": "female", "age": "teenager", "ethnicity": "white"}}\n'
+            f"Use 'unknown' if a field cannot be determined."
+        )
 
-        # Professional interests and domains
-        interest_keywords = {
-            # Technology
-            "technology": ["tech", "technology", "digital", "software", "computing"],
-            "ai_ml": [
-                "ai",
-                "machine learning",
-                "artificial intelligence",
-                "data science",
-            ],
-            "robotics": ["robotics", "automation", "mechatronics", "control systems"],
-            # Business
-            "business": ["business", "entrepreneurship", "management", "strategy"],
-            "startup": ["startup", "venture", "entrepreneurial", "scaling"],
-            "innovation": ["innovation", "development", "r&d", "advancement"],
-            # Science
-            "physics": ["physics", "quantum", "theoretical", "applied science"],
-            "research": ["research", "investigation", "study", "analysis"],
-            "engineering": ["engineering", "systems", "design", "development"],
-            # Education
-            "teaching": ["teaching", "education", "instruction", "training"],
-            "mentoring": ["mentoring", "coaching", "guidance", "development"],
-            "knowledge_sharing": ["knowledge sharing", "learning", "education"],
-            # Creative
-            "design": ["design", "creative", "artistic", "visual"],
-            "content": ["content", "media", "digital media", "creation"],
-            "communication": ["communication", "writing", "speaking", "presenting"],
-            # Sustainability
-            "sustainability": ["sustainability", "green tech", "eco-friendly"],
-            "environment": ["environmental", "climate", "conservation"],
-            "renewable": ["renewable", "clean energy", "sustainable"],
-        }
+        try:
+            response = self.llm.generate_text(prompt=prompt)
 
-        # Extract core professional traits
-        self.core_traits = []
-        professional_indicators = [
-            "founder",
-            "educator",
-            "researcher",
-            "developer",
-            "expert",
-            "professional",
-            "specialist",
-            "leader",
-        ]
+            # Parse JSON response
+            import json
 
-        for indicator in professional_indicators:
-            if indicator in description:
-                self.core_traits.append(indicator)
+            demographics = json.loads(response)
+            return demographics
 
-        # Extract professional interests
-        self.interests = []
-        for field, keywords in interest_keywords.items():
-            if any(keyword in description for keyword in keywords):
-                self.interests.append(field)
+        except Exception as e:
+            print(f"Error extracting demographics: {str(e)}")
+            return {"gender": "unknown", "age": "unknown", "ethnicity": "unknown"}
 
-        # Determine communication style
-        for style, indicators in communication_styles.items():
-            if any(indicator in description for indicator in indicators):
-                self.communication_style = style
-                break
+    def get_personality_context(self) -> str:
+        """Get full personality context including demographics."""
+        demo = self.demographics
+        demographic_str = (
+            f"{demo.get('age', 'unknown')} "
+            f"{demo.get('gender', 'unknown')} "
+            f"{demo.get('ethnicity', 'unknown')}"
+        ).strip()
 
-        # Set current style based on context
-        style_indicators = {
-            "informative": ["explain", "teach", "share", "inform"],
-            "analytical": ["analyze", "examine", "investigate"],
-            "strategic": ["plan", "develop", "implement"],
-            "innovative": ["create", "design", "innovate"],
-        }
-
-        for style, indicators in style_indicators.items():
-            if any(indicator in description for indicator in indicators):
-                self.current_style = style
-                break
-
-    def get_personality_context(self) -> Dict[str, Any]:
-        """Get comprehensive personality context."""
-        return {
-            "traits": self.core_traits,
-            "interests": self.interests,
-            "communication_style": self.communication_style,
-            "current_style": self.current_style,
-        }
+        return (
+            f"Demographics: {demographic_str if demographic_str else 'Not specified'}\n"
+            f"Personality: {self.description}"
+        )

@@ -1,5 +1,5 @@
 import tweepy
-from typing import Optional, Dict, Any
+from typing import Dict, Any, Optional
 
 
 class TwitterIntegration:
@@ -10,8 +10,10 @@ class TwitterIntegration:
         access_token: str,
         access_token_secret: str,
     ):
-        """Initialize Twitter API v2 client."""
-        # Initialize API v2 client
+        """Initialize Twitter API client."""
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_token_secret)
+        self.api = tweepy.API(auth)
         self.client = tweepy.Client(
             consumer_key=consumer_key,
             consumer_secret=consumer_secret,
@@ -19,131 +21,56 @@ class TwitterIntegration:
             access_token_secret=access_token_secret,
         )
 
-        # Initialize API v1.1 client for media upload
-        auth = tweepy.OAuth1UserHandler(
-            consumer_key, consumer_secret, access_token, access_token_secret
-        )
-        self.api = tweepy.API(auth)
-
     def post_tweet(self, text: str) -> Dict[str, Any]:
-        """
-        Post a text tweet using Twitter API v2.
-
-        Args:
-            text: Tweet content
-
-        Returns:
-            Dict containing status and response details
-        """
+        """Post a text-only tweet."""
         try:
             response = self.client.create_tweet(text=text)
-
             return {
                 "status": "success",
-                "tweet_id": response.data["id"],
                 "message": "Tweet posted successfully",
+                "tweet_id": response.data["id"],
             }
-
         except Exception as e:
             return {
                 "status": "failed",
-                "message": f"Error posting tweet: {str(e)}",
+                "message": f"Failed to post tweet: {str(e)}",
             }
 
-    def post_image_tweet(
-        self, image_path: str, status_text: str = ""
-    ) -> Dict[str, Any]:
-        """
-        Post a tweet with an image using Twitter API v1.1 for media and v2 for tweet.
-
-        Args:
-            image_path: Path to image file
-            status_text: Optional tweet text
-
-        Returns:
-            Dict containing status and response details
-        """
+    def post_tweet_with_media(self, text: str, media_path: str) -> Dict[str, Any]:
+        """Post a tweet with media attachment."""
         try:
+            print("\nUploading media...")
             # Upload media using v1.1 API
-            media = self.api.media_upload(filename=image_path)
+            media = self.api.media_upload(filename=media_path)
+            print(f"Media uploaded with ID: {media.media_id}")
 
             # Post tweet with media using v2 API
-            response = self.client.create_tweet(
-                text=status_text, media_ids=[media.media_id]
-            )
+            response = self.client.create_tweet(text=text, media_ids=[media.media_id])
 
             return {
                 "status": "success",
+                "message": "Tweet with media posted successfully",
                 "tweet_id": response.data["id"],
                 "media_id": media.media_id,
-                "message": "Image tweet posted successfully",
             }
 
         except Exception as e:
+            print(f"Error posting tweet with media: {str(e)}")
             return {
                 "status": "failed",
-                "message": f"Error posting image tweet: {str(e)}",
+                "message": f"Failed to post tweet with media: {str(e)}",
             }
 
-    def reply_to_tweet(
-        self, tweet_id: str, text: str, image_path: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Reply to a tweet, optionally with an image.
-
-        Args:
-            tweet_id: ID of tweet to reply to
-            text: Reply text
-            image_path: Optional path to image file
-
-        Returns:
-            Dict containing status and response details
-        """
+    def delete_tweet(self, tweet_id: str) -> Dict[str, Any]:
+        """Delete a tweet by ID."""
         try:
-            media_ids = None
-            if image_path:
-                media = self.api.media_upload(filename=image_path)
-                media_ids = [media.media_id]
-
-            response = self.client.create_tweet(
-                text=text, in_reply_to_tweet_id=tweet_id, media_ids=media_ids
-            )
-
+            self.client.delete_tweet(id=tweet_id)
             return {
                 "status": "success",
-                "tweet_id": response.data["id"],
-                "reply_to": tweet_id,
-                "message": "Reply posted successfully",
+                "message": "Tweet deleted successfully",
             }
-
         except Exception as e:
             return {
                 "status": "failed",
-                "message": f"Error posting reply: {str(e)}",
-            }
-
-    def retweet(self, tweet_id: str) -> Dict[str, Any]:
-        """
-        Retweet a tweet using API v2.
-
-        Args:
-            tweet_id: ID of tweet to retweet
-
-        Returns:
-            Dict containing status and response details
-        """
-        try:
-            response = self.client.retweet(tweet_id)
-
-            return {
-                "status": "success",
-                "tweet_id": response.data["id"],
-                "retweeted_id": tweet_id,
-                "message": "Tweet retweeted successfully",
-            }
-
-        except Exception as e:
-            return {
-                "status": "failed",
-                "message": f"Error retweeting: {str(e)}",
+                "message": f"Failed to delete tweet: {str(e)}",
             }

@@ -1,50 +1,48 @@
 import re
-from typing import Dict, Tuple
+from typing import Tuple
 
 
 class TweetValidator:
-    MAX_TWEET_LENGTH = 280
-    MIN_TWEET_LENGTH = 1
-    URL_LENGTH = 23  # Twitter treats all URLs as 23 characters
+    """Validates and cleans tweet content."""
 
-    @staticmethod
-    def validate_tweet(content: str) -> tuple[bool, dict]:
+    def __init__(self):
+        self.max_length = 280
+        self.url_length = 23  # Twitter treats all URLs as 23 characters
+
+    def clean_tweet_text(self, text: str) -> str:
+        """Clean and format tweet text."""
+        # Remove extra whitespace
+        text = " ".join(text.split())
+
+        # Remove quotes if they wrap the entire text
+        if text.startswith('"') and text.endswith('"'):
+            text = text[1:-1].strip()
+
+        # Remove face swap instructions in parentheses
+        text = re.sub(r"\s*\*.*?\*\s*$", "", text)
+
+        # Normalize hashtags (ensure # is directly followed by text)
+        text = re.sub(r"#\s+", "#", text)
+
+        return text.strip()
+
+    def validate_tweet(self, text: str) -> Tuple[bool, str]:
         """
-        Validate a tweet content.
-        Returns (is_valid, details)
+        Validate tweet content.
+
+        Returns:
+            Tuple of (is_valid, reason)
         """
-        # Remove any character count text that might be included
-        content = TweetValidator._clean_tweet_text(content)
+        if not text:
+            return False, "Tweet is empty"
 
-        issues = []
-        suggestions = []
+        # Calculate length considering URL shortening
+        length = len(text)
+        urls = re.findall(r"https?://\S+", text)
+        for url in urls:
+            length = length - len(url) + self.url_length
 
-        # Check length
-        char_count = len(content)
-        if char_count > 280:
-            issues.append(f"Tweet is too long ({char_count} characters)")
-            suggestions.append("Shorten the tweet to 280 characters or less")
+        if length > self.max_length:
+            return False, f"Tweet exceeds {self.max_length} characters"
 
-        # Other validation checks...
-
-        return len(issues) == 0, {"issues": issues, "suggestions": suggestions}
-
-    @staticmethod
-    def _clean_tweet_text(text: str) -> str:
-        """Remove metadata like character counts from tweet text."""
-        # Remove character count patterns
-        patterns = [
-            r"\(Character count: \d+\)",
-            r"\[Characters: \d+\]",
-            r"Character count: \d+",
-            r"\d+ characters",
-        ]
-
-        cleaned_text = text
-        for pattern in patterns:
-            cleaned_text = re.sub(pattern, "", cleaned_text, flags=re.IGNORECASE)
-
-        # Remove trailing whitespace
-        cleaned_text = cleaned_text.strip()
-
-        return cleaned_text
+        return True, "Valid tweet"

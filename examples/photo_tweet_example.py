@@ -1,85 +1,55 @@
 from fame.agent import Agent
-import os
-from pathlib import Path
-
-
-def setup_environment():
-    """Ensure the environment is properly set up."""
-    # Try different possible profile image locations
-    possible_paths = [
-        Path("../profiles/bonnie.jpg"),  # Relative to examples dir
-        Path("profiles/bonnie.jpg"),  # Relative to project root
-        Path(os.getcwd()) / "profiles/bonnie.jpg",  # Absolute from current dir
-    ]
-
-    profile_image = None
-    for path in possible_paths:
-        if path.exists():
-            profile_image = path
-            break
-
-    if not profile_image:
-        raise FileNotFoundError(
-            "Profile image 'bonnie.jpg' not found. Please ensure it exists in either:\n"
-            f"- {possible_paths[0]}\n"
-            f"- {possible_paths[1]}\n"
-            f"- {possible_paths[2]}"
-        )
-
-    # Check if .env file exists
-    env_file = Path(".env")
-    if not env_file.exists():
-        raise FileNotFoundError(
-            "'.env' file not found. Please create it with your API keys and credentials."
-        )
-
-    return profile_image
 
 
 def main():
-    # Ensure environment is set up and get correct profile path
-    profile_image_path = setup_environment()
+    """Run photo tweet example."""
+    print("\nPosting face-swapped image tweet...")
 
-    # Initialize the agent with detailed configuration
+    # Initialize agent with photographer personality
     agent = Agent(
         env_file=".env",
         facets_of_personality=(
-            "Bonnie is a friendly and cheerful 17-year-old high school student. "
-            "She's passionate about dance, especially ballet and contemporary. "
-            "She's diligent in her studies and maintains a positive attitude. "
-            "She loves sharing her dance journey and student life on social media."
+            "A passionate photographer with an eye for capturing unique moments. "
+            "Known for creative compositions and artistic vision. "
+            "Loves sharing photography tips and inspiring others."
         ),
         abilities_knowledge=(
-            "Expert in ballet and contemporary dance with 10 years of training. "
-            "Strong academic performance in high school, especially in literature and arts. "
-            "Skilled at social media content creation and engaging with followers. "
-            "Basic photography and image editing skills."
+            "Expert in digital photography and photo editing. "
+            "Skilled at composition, lighting, and visual storytelling. "
+            "Experienced in both studio and outdoor photography."
         ),
         mood_emotions=(
-            "Generally cheerful and optimistic, with occasional stress about dance "
-            "performances and exams. Shows enthusiasm for learning and performing. "
-            "Empathetic towards fellow students and dancers."
+            "Excited to share creative work. "
+            "Inspired by beautiful scenes and moments. "
+            "Enthusiastic about helping others improve their photography."
         ),
-        environment_execution=[],  # Empty list for no scheduling
-        profile_image_path=str(profile_image_path),  # Use the found path
+        environment_execution=[],
+        profile_image_path="profiles/bonnie.jpg",
     )
 
     try:
-        # Post a face-swapped image tweet
-        print("\nPosting face-swapped image tweet...")
-        base_image_prompt = (
-            "A graceful ballet dancer in a beautiful pose, wearing a light pink "
-            "leotard and tutu, practicing in front of studio mirrors. The lighting "
-            "is soft and warm, creating an inspiring atmosphere for dance."
+        # Generate and post tweet with face swap
+        result = agent.post_image_tweet(
+            prompt=(
+                "A professional photographer in a sunlit studio, surrounded by "
+                "high-end camera equipment and stunning photo displays. The scene "
+                "captures the perfect blend of technical expertise and artistic vision."
+            ),
+            tweet_text="",  # Will be generated from the image
+            use_face_swap=True,  # Enable face swapping
         )
-        result = agent.post_face_tweet(base_image_prompt=base_image_prompt)
-        print("Result:", result)
 
+        print("\nTweet posting result:")
+        print(f"Status: {result['status']}")
+        print(f"Message: {result.get('message', 'No message provided')}")
         if result["status"] == "failed":
-            print("Failed to post face-swapped image tweet:", result["message"])
+            print(f"\nFull result: {result}")
 
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
+        print(f"\nAn error occurred: {str(e)}")
+        import traceback
+
+        print(traceback.format_exc())
 
 
 if __name__ == "__main__":

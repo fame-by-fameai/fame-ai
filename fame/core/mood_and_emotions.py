@@ -1,112 +1,77 @@
 from dataclasses import dataclass, field
-from typing import Dict, Any
-import random
-from fame.utils.sentiment_analysis import SentimentAnalyzer
+from typing import List, Dict, Any
 
 
 @dataclass
 class MoodAndEmotions:
     current_mood: str = "neutral"
-    mood_intensity: float = 0.5  # 0.0 to 1.0
-    emotional_stability: float = 0.7  # 0.0 to 1.0
-    emoji_style: Dict[str, Any] = field(
-        default_factory=lambda: {
-            "frequency": 0.5,  # 0.0 (never) to 1.0 (very frequent)
-            "style": "cheerful",  # cheerful, professional, minimal, expressive
-            "max_per_post": 2,
-        }
-    )
+    mood_intensity: float = 0.5
+    emotional_state: List[str] = field(default_factory=list)
     raw_description: str = ""
 
-    def __post_init__(self):
-        """Initialize after dataclass fields are set."""
+    def __init__(self, description: str):
+        """Initialize mood and emotions from description."""
+        self.raw_description = description
+        self.emotional_state = []
         self._parse_description()
-        self._analyzer = SentimentAnalyzer()
 
     def _parse_description(self):
-        """Parse the description to set mood and emotional parameters."""
+        """Parse the description to extract mood and emotions."""
         description = self.raw_description.lower()
 
-        # Set emoji style based on personality indicators
-        if any(word in description for word in ["professional", "formal", "serious"]):
-            self.emoji_style.update(
-                {
-                    "frequency": 0.2,
-                    "style": "professional",
-                    "max_per_post": 1,
-                }
-            )
-        elif any(
-            word in description
-            for word in ["cheerful", "playful", "fun", "social media"]
-        ):
-            self.emoji_style.update(
-                {
-                    "frequency": 0.8,
-                    "style": "cheerful",
-                    "max_per_post": 3,
-                }
-            )
-        elif any(
-            word in description for word in ["expressive", "artistic", "creative"]
-        ):
-            self.emoji_style.update(
-                {
-                    "frequency": 0.7,
-                    "style": "expressive",
-                    "max_per_post": 2,
-                }
-            )
-
-        # Set mood intensity based on descriptive words
-        intensity_words = {
-            "very": 0.9,
-            "extremely": 1.0,
-            "somewhat": 0.4,
-            "slightly": 0.3,
-            "moderately": 0.6,
-        }
-        for word, value in intensity_words.items():
-            if word in description:
-                self.mood_intensity = value
-                break
-
-        # Extract current mood
-        mood_indicators = {
-            "happy": ["happy", "joyful", "excited", "cheerful"],
-            "confident": ["confident", "proud", "accomplished"],
-            "inspired": ["inspired", "motivated", "creative"],
-            "focused": ["focused", "determined", "concentrated"],
-            "tired": ["tired", "exhausted", "drained"],
-            "nervous": ["nervous", "anxious", "worried"],
+        # Define mood keywords and their associated intensities
+        mood_keywords = {
+            "excited": (0.8, ["excited", "thrilled", "enthusiastic", "energetic"]),
+            "happy": (0.7, ["happy", "joyful", "pleased", "delighted"]),
+            "optimistic": (0.6, ["optimistic", "hopeful", "positive", "confident"]),
+            "calm": (0.5, ["calm", "peaceful", "relaxed", "serene"]),
+            "neutral": (0.5, ["neutral", "balanced", "steady", "composed"]),
+            "thoughtful": (0.4, ["thoughtful", "contemplative", "reflective"]),
+            "serious": (0.3, ["serious", "focused", "determined", "resolute"]),
+            "concerned": (0.2, ["concerned", "worried", "anxious", "uneasy"]),
         }
 
-        for mood, indicators in mood_indicators.items():
-            if any(indicator in description for indicator in indicators):
-                self.current_mood = mood
-                break
+        # Find the most relevant mood
+        max_matches = 0
+        best_mood = "neutral"
+        best_intensity = 0.5
 
-    def update_mood(self, text: str):
-        """Update mood based on text sentiment analysis."""
-        mood_info = self._analyzer.analyze_mood(text)
-        self.current_mood = mood_info["mood"]
-        self.mood_intensity = mood_info["intensity"]
+        for mood, (intensity, keywords) in mood_keywords.items():
+            matches = sum(1 for keyword in keywords if keyword in description)
+            if matches > max_matches:
+                max_matches = matches
+                best_mood = mood
+                best_intensity = intensity
 
-    def get_current_emotional_state(self) -> Dict[str, Any]:
-        """Get the current emotional state."""
+        self.current_mood = best_mood
+        self.mood_intensity = best_intensity
+
+        # Extract emotional states
+        emotional_keywords = {
+            "passionate": ["passionate", "zealous", "ardent"],
+            "curious": ["curious", "inquisitive", "interested"],
+            "patient": ["patient", "understanding", "tolerant"],
+            "encouraging": ["encouraging", "supportive", "motivating"],
+            "analytical": ["analytical", "logical", "methodical"],
+            "creative": ["creative", "innovative", "imaginative"],
+            "friendly": ["friendly", "approachable", "welcoming"],
+            "professional": ["professional", "formal", "composed"],
+        }
+
+        for emotion, keywords in emotional_keywords.items():
+            if any(keyword in description for keyword in keywords):
+                self.emotional_state.append(emotion)
+
+    def get_mood_context(self) -> Dict[str, Any]:
+        """Get comprehensive mood context."""
         return {
-            "mood": self.current_mood,
-            "intensity": self.mood_intensity,
-            "stability": self.emotional_stability,
-            "emoji_style": self.emoji_style,
+            "current_mood": self.current_mood,
+            "mood_intensity": self.mood_intensity,
+            "emotional_state": self.emotional_state,
         }
 
-    def should_use_emoji(self) -> bool:
-        """Determine if emoji should be used based on style and frequency."""
-        return random.random() < self.emoji_style["frequency"]
-
-    def get_emoji_count(self) -> int:
-        """Get number of emojis to use based on style."""
-        if not self.should_use_emoji():
-            return 0
-        return random.randint(1, self.emoji_style["max_per_post"])
+    def update_mood(self, new_mood: str, intensity: float = None):
+        """Update the current mood and optionally its intensity."""
+        self.current_mood = new_mood
+        if intensity is not None:
+            self.mood_intensity = max(0.0, min(1.0, intensity))
