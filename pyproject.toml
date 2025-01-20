@@ -1,6 +1,6 @@
 [project]
 name = "fame-ai"
-version = "0.0.3"
+version = "0.0.5"
 description = "FAME Framework (also known as Full AI Meta Engine) is an AI agent framework designed to simulate human-like interactions and content creation on social media platforms, specifically Twitter. It can generate content including images, text, and videos that reflect the agent's personality, knowledge, and current mood. 🎨📝"
 readme = "README.md"
 requires-python = ">=3.8"
