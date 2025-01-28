@@ -3,10 +3,10 @@ DEFAULT_MODELS = {
     "text_generation": {
         "id": "deepseek/deepseek-chat",  # Primary model
         "backup_models": [
-            "anthropic/claude-2",
-            "google/palm-2-chat-bison",
-            "meta-llama/llama-2-70b-chat",
-            "anthropic/claude-instant-v1",  # Fastest fallback
+            "google/gemini-2.0-flash-exp:free",
+            "microsoft/phi-4",
+            "openai/gpt-4o-mini",
+            "anthropic/claude-3.5-sonnet:beta",
         ],
         "default_params": {
             "temperature": 0.7,
@@ -19,9 +19,10 @@ DEFAULT_MODELS = {
     "chat": {
         "id": "deepseek/deepseek-chat",  # Primary model
         "backup_models": [
-            "anthropic/claude-instant-v1",  # Faster, cheaper backup
-            "google/palm-2-chat-bison",
-            "meta-llama/llama-2-70b-chat",
+            "google/gemini-2.0-flash-exp:free",
+            "microsoft/phi-4",
+            "openai/gpt-4o-mini",
+            "anthropic/claude-3.5-sonnet:beta",
         ],
         "default_params": {
             "temperature": 0.8,
